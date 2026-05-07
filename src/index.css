@@ -1,0 +1,61 @@
+/* ─── EduPulse Global Styles ─── */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200;12..96,400;12..96,600;12..96,800&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --font: 'Bricolage Grotesque', sans-serif;
+
+  --ink:    #1a1a2e;
+  --ink2:   #3d3d5c;
+  --ink3:   #8888aa;
+
+  --paper:  #f7f4f0;
+  --paper2: #f0ece6;
+  --paper3: #e2ddd6;
+
+  --blue:   #a8c8f8;
+  --blueD:  #2255cc;
+  --gold:   #f5d98a;
+  --goldD:  #9a6f00;
+  --mint:   #a8e6cf;
+  --mintD:  #1a7a4a;
+  --rose:   #f5b8c4;
+  --roseD:  #c0404a;
+  --lilac:  #c8b8f0;
+  --lilacD: #5535b0;
+  --peach:  #f5c8a8;
+  --peachD: #a04020;
+  --sky:    #b8e4f5;
+  --skyD:   #1a6a8a;
+
+  --radius:    14px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --shadow:    0 4px 24px rgba(26,26,46,0.08);
+}
+
+body {
+  font-family: var(--font);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: var(--font);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--paper2); }
+::-webkit-scrollbar-thumb { background: var(--paper3); border-radius: 3px; }
+
+button { cursor: pointer; font-family: var(--font); }
+input, select, textarea { font-family: var(--font); font-size: 14px; }
+a { color: var(--blueD); text-decoration: none; }
