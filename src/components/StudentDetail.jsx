@@ -1,8 +1,25 @@
 import React, { useEffect, useState } from 'react'
 import { getAvg } from '../utils.js'
 import { pastel, AIBox, BackBtn, Modal, FormGroup, TextInput, Notification } from './UI.jsx'
+import { useAI, AIToggleBtn } from '../AIContext.jsx'
 
 const F = "'Bricolage Grotesque', sans-serif"
+
+function PersonIconSquare({ size = 36, borderRadius = 12, bg, color }) {
+  const r = size / 2
+  const headR  = size * 0.22
+  const headCY = size * 0.33
+  const bodyR  = size * 0.32
+  const bodyCY = size * 0.84
+  return (
+    <div style={{ width: size, height: size, borderRadius, background: bg, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={r} cy={headCY} r={headR} fill={color} opacity="0.9" />
+        <circle cx={r} cy={bodyCY} r={bodyR} fill={color} opacity="0.9" />
+      </svg>
+    </div>
+  )
+}
 
 async function streamClaude(prompt, onChunk, onDone) {
   try {
@@ -49,8 +66,11 @@ export default function StudentDetail({ student, cls, teacherName, onBack, onSig
   const topicScores = student.topics.map((topic, i) => ({ topic, score: student.scores[i] ?? avg }))
   const sorted = [...topicScores].sort((a, b) => a.score - b.score)
 
+  const { aiEnabled } = useAI()
+
   useEffect(() => {
     setAiText(''); setAiLoading(true)
+    if (!aiEnabled) { setAiText('AI is disabled. Toggle it on to generate analysis.'); setAiLoading(false); return }
     const scores = student.topics.map((t, i) => `${t}: ${student.scores[i]}%`).join(', ')
     const weak = sorted.filter(t => t.score < benchmark)
     const critical = sorted.filter(t => t.score < 60)
@@ -58,14 +78,7 @@ export default function StudentDetail({ student, cls, teacherName, onBack, onSig
       ? (student.scores[student.scores.length-1] > student.scores[student.scores.length-3] ? 'improving' : 'declining')
       : 'insufficient data'
 
-    const prompt = `You are an education coach giving a teacher specific, actionable feedback about one student. 
-    Use full sentences to direct the conversation. 
-    Be direct and use teacher language. Reference the student by name only one time. 
-    When talking about the student mention the weaknesses first then mention the improvements. 
-    One line for each thing with the response only totaling out to 3 lines for ease of reading. 
-    If student is failing push the teacher to motivate the student, if the student is passing use encouraging language to the person 
-    Use no dashes, em dashes. Only use periods or commas. 
-    Speak as if you are a education coach and you are explaining to the teacher how to do better. 
+    const prompt = `You are an education coach giving a teacher specific, actionable feedback about one student. Use bullet points. Be direct and use teacher language. Reference the student by name.
 
 Student: ${student.name}
 All scores: ${scores}
@@ -98,6 +111,7 @@ Keep each bullet to one sentence. No intro text, just the bullets.`
       <nav style={{ background: '#fff', borderBottom: '1px solid #ede8e0', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ fontFamily: F, fontWeight: 800, fontSize: 20, color: '#1a1a2e' }}>EduPulse</div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <AIToggleBtn />
           <span style={{ background: '#a8c8f8', color: '#1a3a8a', padding: '5px 14px', borderRadius: 20, fontSize: 13, fontWeight: 700, fontFamily: F }}>{teacherName}</span>
           <button onClick={onSignOut} style={{ padding: '6px 14px', borderRadius: 20, border: '1px solid #e2ddd6', background: 'transparent', color: '#8888aa', fontSize: 12, cursor: 'pointer', fontFamily: F, fontWeight: 600 }}>Sign Out</button>
         </div>
@@ -111,12 +125,16 @@ Keep each bullet to one sentence. No intro text, just the bullets.`
           <div style={{ position: 'absolute', right: -40, top: -40, width: 220, height: 220, borderRadius: '50%', background: p.dark, opacity: .05 }} />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-              {/* Avatar — rounded pill not circle */}
-              <div style={{ width: 64, height: 64, borderRadius: 14, background: p.dark, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, flexShrink: 0, fontFamily: F }}>
-                {student.name.split(' ').map(w => w[0]).join('')}
-              </div>
+              <PersonIconSquare size={64} borderRadius={14} bg={p.dark} color="#fff" />
               <div>
-                <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '2px', color: p.dark, opacity: .65, marginBottom: 4 }}>{cls?.name?.toUpperCase() || 'STUDENT'}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '2px', color: p.dark, opacity: .65 }}>{cls?.name?.toUpperCase() || 'STUDENT'}</div>
+                  {student.grade && (
+                    <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 9px', borderRadius: 20, background: p.dark + '22', color: p.dark, letterSpacing: '1px' }}>
+                      GRADE {student.grade}
+                    </span>
+                  )}
+                </div>
                 <h1 style={{ fontFamily: F, fontWeight: 800, fontSize: 34, color: p.dark, letterSpacing: '-0.5px', lineHeight: 1 }}>{student.name}</h1>
               </div>
             </div>

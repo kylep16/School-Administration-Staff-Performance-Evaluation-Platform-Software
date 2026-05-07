@@ -90,51 +90,161 @@ export default function RoleSelect({ onSelect }) {
         <div style={{ position: 'relative', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'all .7s ease .1s' }}>
 
           {/* Main illustration area */}
-          <div style={{ background: '#eae6d8', borderRadius: 28, padding: '40px', minHeight: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ background: '#eae6d8', borderRadius: 28, padding: '32px 24px 0', minHeight: 400, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
 
-            {/* Abstract shapes mimicking illustration */}
-            <div style={{ position: 'absolute', top: 30, right: 40, width: 120, height: 120, borderRadius: '50%', background: '#d4d0c4', opacity: .5 }} />
-            <div style={{ position: 'absolute', bottom: 20, left: 30, width: 80, height: 80, borderRadius: '50%', background: '#c8c4b4', opacity: .4 }} />
+            <svg width="420" height="340" viewBox="0 0 420 340" fill="none" xmlns="http://www.w3.org/2000/svg">
 
-            {/* Center SVG illustration — simplified students */}
-            <svg width="260" height="280" viewBox="0 0 260 280" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Student 1 */}
-              <circle cx="90" cy="60" r="28" fill="#1a1a2e" opacity=".9"/>
-              <circle cx="90" cy="60" r="22" fill="#eae6d8"/>
-              <circle cx="90" cy="55" r="12" fill="#1a1a2e" opacity=".85"/>
-              <rect x="62" y="90" width="56" height="70" rx="12" fill="#1a1a2e" opacity=".85"/>
-              <rect x="70" y="100" width="20" height="28" rx="4" fill="#a8c8f8"/>
-              <rect x="56" y="95" width="14" height="40" rx="7" fill="#1a1a2e" opacity=".7"/>
-              <rect x="190" y="95" width="14" height="40" rx="7" fill="#1a1a2e" opacity=".7"/>
-              <rect x="68" y="160" width="18" height="55" rx="9" fill="#1a1a2e" opacity=".7"/>
-              <rect x="104" y="160" width="18" height="55" rx="9" fill="#1a1a2e" opacity=".7"/>
+              {/* ── Chalkboard on wall ── */}
+              <rect x="60" y="20" width="300" height="140" rx="6" fill="#2d4a3e"/>
+              <rect x="68" y="28" width="284" height="124" rx="4" fill="#3a5c4e"/>
+              {/* Board content - chart lines */}
+              <polyline points="90,120 120,90 155,105 190,72 225,85 260,60 295,75 320,55" stroke="#a8e6cf" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              <circle cx="120" cy="90" r="4" fill="#a8e6cf"/>
+              <circle cx="190" cy="72" r="4" fill="#a8e6cf"/>
+              <circle cx="260" cy="60" r="4" fill="#f5d98a"/>
+              <circle cx="320" cy="55" r="4" fill="#f5d98a"/>
+              {/* Board text */}
+              <rect x="90" y="35" width="80" height="7" rx="3" fill="#fff" opacity=".25"/>
+              <rect x="90" y="47" width="55" height="5" rx="2" fill="#fff" opacity=".15"/>
+              {/* Grid lines on board */}
+              <line x1="90" y1="130" x2="330" y2="130" stroke="#fff" strokeWidth=".5" opacity=".15"/>
+              <line x1="90" y1="115" x2="330" y2="115" stroke="#fff" strokeWidth=".5" opacity=".1"/>
+              <line x1="90" y1="100" x2="330" y2="100" stroke="#fff" strokeWidth=".5" opacity=".1"/>
+              <line x1="150" y1="35" x2="150" y2="145" stroke="#fff" strokeWidth=".5" opacity=".08"/>
+              <line x1="210" y1="35" x2="210" y2="145" stroke="#fff" strokeWidth=".5" opacity=".08"/>
+              <line x1="270" y1="35" x2="270" y2="145" stroke="#fff" strokeWidth=".5" opacity=".08"/>
+              {/* Chalk tray */}
+              <rect x="60" y="158" width="300" height="8" rx="3" fill="#c8b89a"/>
+              <rect x="90" y="159" width="18" height="5" rx="2" fill="#fff" opacity=".7"/>
+              <rect x="114" y="159" width="12" height="5" rx="2" fill="#f5d98a" opacity=".8"/>
 
-              {/* Student 2 */}
-              <circle cx="175" cy="58" r="26" fill="#1a1a2e" opacity=".85"/>
-              <circle cx="175" cy="58" r="20" fill="#eae6d8"/>
-              <circle cx="175" cy="53" r="11" fill="#1a1a2e" opacity=".8"/>
-              <rect x="150" y="86" width="50" height="68" rx="10" fill="#3d3d5c" opacity=".8"/>
-              <rect x="155" y="94" width="18" height="26" rx="4" fill="#f5d98a"/>
-              <rect x="144" y="90" width="13" height="38" rx="6.5" fill="#3d3d5c" opacity=".7"/>
-              <rect x="154" y="154" width="16" height="52" rx="8" fill="#3d3d5c" opacity=".7"/>
-              <rect x="180" y="154" width="16" height="52" rx="8" fill="#3d3d5c" opacity=".7"/>
+              {/* ── Floor line ── */}
+              <rect x="0" y="320" width="420" height="20" rx="0" fill="#d4cfc0"/>
+              <rect x="0" y="318" width="420" height="3" rx="0" fill="#c4bfb0"/>
 
-              {/* Ground line */}
-              <rect x="40" y="216" width="180" height="3" rx="1.5" fill="#1a1a2e" opacity=".15"/>
+              {/* ── Teacher ── */}
+              {/* Body */}
+              <rect x="168" y="210" width="44" height="68" rx="10" fill="#1a1a2e"/>
+              {/* Collar / shirt detail */}
+              <rect x="181" y="210" width="18" height="20" rx="4" fill="#fff" opacity=".15"/>
+              {/* Left arm - pointing at board */}
+              <path d="M168 220 Q140 200 115 185" stroke="#1a1a2e" strokeWidth="14" strokeLinecap="round" fill="none"/>
+              <path d="M168 220 Q140 200 115 185" stroke="#f5c8a8" strokeWidth="10" strokeLinecap="round" fill="none"/>
+              {/* Right arm down */}
+              <path d="M212 225 Q220 245 218 260" stroke="#1a1a2e" strokeWidth="14" strokeLinecap="round" fill="none"/>
+              <path d="M212 225 Q220 245 218 260" stroke="#f5c8a8" strokeWidth="10" strokeLinecap="round" fill="none"/>
+              {/* Legs */}
+              <rect x="172" y="274" width="16" height="46" rx="8" fill="#2d2d4e"/>
+              <rect x="192" y="274" width="16" height="46" rx="8" fill="#2d2d4e"/>
+              {/* Shoes */}
+              <ellipse cx="180" cy="320" rx="12" ry="6" fill="#1a1a2e"/>
+              <ellipse cx="200" cy="320" rx="12" ry="6" fill="#1a1a2e"/>
+              {/* Neck */}
+              <rect x="183" y="196" width="14" height="16" rx="5" fill="#f5c8a8"/>
+              {/* Head */}
+              <ellipse cx="190" cy="186" rx="22" ry="24" fill="#f5c8a8"/>
+              {/* Hair */}
+              <path d="M168 180 Q170 158 190 162 Q210 158 212 180" fill="#1a1a2e"/>
+              {/* Face */}
+              <ellipse cx="183" cy="186" rx="3" ry="3.5" fill="#1a1a2e" opacity=".7"/>
+              <ellipse cx="197" cy="186" rx="3" ry="3.5" fill="#1a1a2e" opacity=".7"/>
+              <path d="M184 196 Q190 201 196 196" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity=".6"/>
+              {/* Glasses */}
+              <rect x="179" y="182" width="10" height="8" rx="3" stroke="#1a1a2e" strokeWidth="1.5" fill="none" opacity=".5"/>
+              <rect x="192" y="182" width="10" height="8" rx="3" stroke="#1a1a2e" strokeWidth="1.5" fill="none" opacity=".5"/>
+              <line x1="189" y1="186" x2="192" y2="186" stroke="#1a1a2e" strokeWidth="1.5" opacity=".5"/>
+              {/* Pointer */}
+              <line x1="115" y1="185" x2="90" y2="108" stroke="#c8b89a" strokeWidth="2.5" strokeLinecap="round"/>
 
-              {/* Floating elements */}
-              <rect x="10" y="130" width="52" height="36" rx="10" fill="#a8e6cf"/>
-              <rect x="16" y="138" width="20" height="4" rx="2" fill="#0d5c30" opacity=".6"/>
-              <rect x="16" y="146" width="30" height="4" rx="2" fill="#0d5c30" opacity=".4"/>
-              <text x="36" y="143" fontFamily="sans-serif" fontSize="11" fontWeight="800" fill="#0d5c30">88%</text>
+              {/* ── Student 1 (left, sitting) ── */}
+              {/* Desk */}
+              <rect x="18" y="268" width="72" height="8" rx="3" fill="#c8b89a"/>
+              <rect x="28" y="276" width="8" height="44" rx="4" fill="#b8a888"/>
+              <rect x="72" y="276" width="8" height="44" rx="4" fill="#b8a888"/>
+              {/* Body */}
+              <rect x="28" y="230" width="36" height="44" rx="8" fill="#a8c8f8"/>
+              {/* Arms on desk */}
+              <rect x="16" y="255" width="18" height="12" rx="6" fill="#a8c8f8"/>
+              <rect x="62" y="255" width="18" height="12" rx="6" fill="#a8c8f8"/>
+              {/* Hands */}
+              <ellipse cx="20" cy="264" rx="7" ry="5" fill="#f5d8b8"/>
+              <ellipse cx="74" cy="264" rx="7" ry="5" fill="#f5d8b8"/>
+              {/* Neck */}
+              <rect x="38" y="218" width="12" height="14" rx="4" fill="#f5d8b8"/>
+              {/* Head */}
+              <ellipse cx="44" cy="208" rx="18" ry="20" fill="#f5d8b8"/>
+              {/* Hair */}
+              <path d="M26 203 Q28 186 44 188 Q60 186 62 203" fill="#3d2a1a"/>
+              {/* Eyes */}
+              <ellipse cx="38" cy="208" rx="2.5" ry="3" fill="#1a1a2e" opacity=".8"/>
+              <ellipse cx="50" cy="208" rx="2.5" ry="3" fill="#1a1a2e" opacity=".8"/>
+              {/* Smile */}
+              <path d="M39 216 Q44 220 49 216" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity=".5"/>
+              {/* Notebook on desk */}
+              <rect x="22" y="254" width="52" height="34" rx="3" fill="#fff" opacity=".9"/>
+              <rect x="26" y="259" width="30" height="2" rx="1" fill="#8888aa" opacity=".4"/>
+              <rect x="26" y="264" width="36" height="2" rx="1" fill="#8888aa" opacity=".3"/>
+              <rect x="26" y="269" width="28" height="2" rx="1" fill="#8888aa" opacity=".3"/>
+              <rect x="26" y="274" width="20" height="2" rx="1" fill="#a8c8f8" opacity=".6"/>
 
-              <rect x="198" y="118" width="52" height="36" rx="10" fill="#f5b8c4"/>
-              <rect x="204" y="126" width="20" height="4" rx="2" fill="#7a1522" opacity=".6"/>
-              <rect x="204" y="134" width="30" height="4" rx="2" fill="#7a1522" opacity=".4"/>
-              <text x="218" y="131" fontFamily="sans-serif" fontSize="11" fontWeight="800" fill="#7a1522">72%</text>
+              {/* ── Student 2 (right, sitting) ── */}
+              {/* Desk */}
+              <rect x="330" y="268" width="72" height="8" rx="3" fill="#c8b89a"/>
+              <rect x="340" y="276" width="8" height="44" rx="4" fill="#b8a888"/>
+              <rect x="384" y="276" width="8" height="44" rx="4" fill="#b8a888"/>
+              {/* Body */}
+              <rect x="342" y="230" width="36" height="44" rx="8" fill="#f5d98a"/>
+              {/* Arms */}
+              <rect x="330" y="255" width="18" height="12" rx="6" fill="#f5d98a"/>
+              <rect x="374" y="255" width="18" height="12" rx="6" fill="#f5d98a"/>
+              {/* Hands */}
+              <ellipse cx="334" cy="264" rx="7" ry="5" fill="#f5d8b8"/>
+              <ellipse cx="388" cy="264" rx="7" ry="5" fill="#f5d8b8"/>
+              {/* Neck */}
+              <rect x="352" y="218" width="12" height="14" rx="4" fill="#f5d8b8"/>
+              {/* Head */}
+              <ellipse cx="358" cy="208" rx="18" ry="20" fill="#f5d8b8"/>
+              {/* Hair — ponytail */}
+              <path d="M340 200 Q342 184 358 186 Q374 184 376 200" fill="#1a1a2e"/>
+              <ellipse cx="376" cy="196" rx="6" ry="10" fill="#1a1a2e"/>
+              {/* Eyes */}
+              <ellipse cx="352" cy="207" rx="2.5" ry="3" fill="#1a1a2e" opacity=".8"/>
+              <ellipse cx="364" cy="207" rx="2.5" ry="3" fill="#1a1a2e" opacity=".8"/>
+              {/* Mouth */}
+              <path d="M353 216 Q358 220 363 216" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity=".5"/>
+              {/* Laptop on desk */}
+              <rect x="334" y="248" width="54" height="34" rx="3" fill="#2d2d4e"/>
+              <rect x="337" y="251" width="48" height="26" rx="2" fill="#3d3d5c"/>
+              {/* Screen content */}
+              <rect x="341" y="255" width="20" height="3" rx="1" fill="#a8c8f8" opacity=".7"/>
+              <rect x="341" y="261" width="30" height="2" rx="1" fill="#fff" opacity=".2"/>
+              <rect x="341" y="266" width="24" height="2" rx="1" fill="#fff" opacity=".2"/>
+              <rect x="341" y="271" width="16" height="3" rx="1" fill="#a8e6cf" opacity=".6"/>
+              {/* Laptop base */}
+              <rect x="330" y="280" width="62" height="5" rx="2" fill="#1a1a2e" opacity=".5"/>
 
-              <rect x="95" y="228" width="70" height="30" rx="8" fill="#c8b8f0"/>
-              <text x="130" y="248" textAnchor="middle" fontFamily="sans-serif" fontSize="10" fontWeight="800" fill="#3a1a80">AI NOTES</text>
+              {/* ── Student 3 (middle, standing/raising hand) ── */}
+              <rect x="252" y="230" width="34" height="50" rx="8" fill="#f5b8c4"/>
+              <rect x="244" y="248" width="14" height="28" rx="7" fill="#f5b8c4"/>
+              <rect x="286" y="248" width="14" height="28" rx="7" fill="#f5b8c4"/>
+              {/* Raised hand */}
+              <path d="M252 238 Q238 218 232 195" stroke="#f5b8c4" strokeWidth="13" strokeLinecap="round" fill="none"/>
+              <ellipse cx="230" cy="190" rx="9" ry="11" fill="#f5d8b8"/>
+              {/* Legs */}
+              <rect x="256" y="278" width="14" height="42" rx="7" fill="#3d3d5c"/>
+              <rect x="272" y="278" width="14" height="42" rx="7" fill="#3d3d5c"/>
+              <ellipse cx="263" cy="320" rx="11" ry="5" fill="#1a1a2e"/>
+              <ellipse cx="279" cy="320" rx="11" ry="5" fill="#1a1a2e"/>
+              {/* Neck + head */}
+              <rect x="262" y="218" width="12" height="14" rx="4" fill="#f5d8b8"/>
+              <ellipse cx="268" cy="207" rx="18" ry="20" fill="#f5d8b8"/>
+              {/* Hair */}
+              <path d="M250 200 Q252 184 268 186 Q284 184 286 200" fill="#8B4513"/>
+              {/* Eyes */}
+              <ellipse cx="262" cy="207" rx="2.5" ry="3" fill="#1a1a2e" opacity=".8"/>
+              <ellipse cx="274" cy="207" rx="2.5" ry="3" fill="#1a1a2e" opacity=".8"/>
+              <path d="M263 216 Q268 220 273 216" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity=".5"/>
+
             </svg>
           </div>
 

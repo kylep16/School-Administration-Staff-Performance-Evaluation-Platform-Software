@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { classAvg, getAvg } from '../utils.js'
 import { Modal, FormGroup, TextInput, Btn, Notification } from './UI.jsx'
+import { useAI, AIToggleBtn } from '../AIContext.jsx'
 
 const F = "'Bricolage Grotesque', sans-serif"
 
-// Pastel palette — each class/teacher gets one
 const PASTELS = [
   { bg: '#a8c8f8', dark: '#1a3a8a', light: '#e8f2ff' },
   { bg: '#f5d98a', dark: '#7a4f00', light: '#fff8e0' },
@@ -16,15 +16,65 @@ const PASTELS = [
 ]
 function pastel(idx) { return PASTELS[idx % PASTELS.length] }
 
+// ── Person Icon SVG ───────────────────────────────────────────────────────────
+// Replaces letter initials everywhere — renders in the card's color scheme
+function PersonIcon({ size = 36, bg, color }) {
+  const r = size / 2
+  // head radius ~28% of total, body arc starts at ~52%
+  const headR  = size * 0.22
+  const headCY = size * 0.33
+  const bodyR  = size * 0.32
+  const bodyCY = size * 0.84
+
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: bg, flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      overflow: 'hidden',
+    }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* head */}
+        <circle cx={r} cy={headCY} r={headR} fill={color} opacity="0.9" />
+        {/* body — clipped circle so it looks like shoulders */}
+        <circle cx={r} cy={bodyCY} r={bodyR} fill={color} opacity="0.9" />
+      </svg>
+    </div>
+  )
+}
+
+// Rectangular version for cards/list rows where shape is a rounded square
+function PersonIconSquare({ size = 36, borderRadius = 12, bg, color }) {
+  const r = size / 2
+  const headR  = size * 0.22
+  const headCY = size * 0.33
+  const bodyR  = size * 0.32
+  const bodyCY = size * 0.84
+
+  return (
+    <div style={{
+      width: size, height: size, borderRadius,
+      background: bg, flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      overflow: 'hidden',
+    }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={r} cy={headCY} r={headR} fill={color} opacity="0.9" />
+        <circle cx={r} cy={bodyCY} r={bodyR} fill={color} opacity="0.9" />
+      </svg>
+    </div>
+  )
+}
+
 async function streamClaude(prompt, onChunk, onDone) {
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST', headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': import.meta.env.VITE_ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
+        'Content-Type': 'application/json',
+        'x-api-key': import.meta.env.VITE_ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
       body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 350, stream: true, messages: [{ role: 'user', content: prompt }] }),
     })
     const reader = resp.body.getReader(); const dec = new TextDecoder(); let buf = ''
@@ -116,6 +166,7 @@ export default function AdminDash({ teachers, onSignOut }) {
         </nav>
 
         <div style={{ padding: '12px 12px 20px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <AIToggleBtn />
           <button onClick={() => setModal('addTeacher')} style={{ width: '100%', padding: '10px', borderRadius: 14, border: 'none', background: '#a8c8f8', color: '#1a3a8a', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: F }}>+ Add Teacher</button>
           <button onClick={() => setModal('addStudent')} style={{ width: '100%', padding: '10px', borderRadius: 14, border: '1.5px solid #e2ddd6', background: '#fff', color: '#3d3d5c', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: F }}>+ Add Student</button>
           <button onClick={onSignOut} style={{ width: '100%', padding: '8px', borderRadius: 14, border: 'none', background: 'transparent', color: '#8888aa', fontSize: 12, cursor: 'pointer', fontFamily: F }}>Sign Out</button>
@@ -124,7 +175,7 @@ export default function AdminDash({ teachers, onSignOut }) {
 
       {/* Main */}
       <main style={{ marginLeft: 220, flex: 1, padding: '32px 36px', minWidth: 0 }}>
-        {page === 'dashboard' && <DashPage teachers={teachers} allClasses={allClasses} totalStudents={totalStudents} classesAtBenchmark={classesAtBenchmark} overallAvg={overallAvg} />}
+        {page === 'dashboard' && <DashPage teachers={teachers} allClasses={allClasses} totalStudents={totalStudents} classesAtBenchmark={classesAtBenchmark} overallAvg={overallAvg} onNavigate={setPage} />}
         {page === 'teachers'  && <TeachersPage teachers={teachers} />}
         {page === 'students'  && <StudentsPage teachers={teachers} allClasses={allClasses} />}
         {page === 'analytics' && <AnalyticsPage teachers={teachers} allClasses={allClasses} />}
@@ -165,69 +216,21 @@ export default function AdminDash({ teachers, onSignOut }) {
 }
 
 // ── Dashboard Page ─────────────────────────────────────────────────────────────
-function DashPage({ teachers, allClasses, totalStudents, classesAtBenchmark, overallAvg }) {
+function DashPage({ teachers, allClasses, totalStudents, classesAtBenchmark, overallAvg, onNavigate }) {
   const [aiText, setAiText] = useState('')
   const [aiLoading, setAiLoading] = useState(true)
+  const { aiEnabled } = useAI()
 
   useEffect(() => {
     setAiText(''); setAiLoading(true)
+    if (!aiEnabled) { setAiText('AI is disabled. Toggle it on to generate analysis.'); setAiLoading(false); return }
     const summaries = teachers.map(t => {
       const tavg = t.classes.length ? Math.round(t.classes.reduce((a,c)=>a+classAvg(c),0)/t.classes.length) : 0
       const belowClasses = t.classes.filter(c => classAvg(c) < c.benchmark)
       const criticalStudents = t.classes.flatMap(c => c.students.filter(s => getAvg(s.scores) < 60).map(s => s.name + ' in ' + c.name))
       return t.name + ' (' + t.subject + '): avg ' + tavg + '%' + (belowClasses.length ? ', classes below benchmark: ' + belowClasses.map(c => c.name + ' ' + classAvg(c) + '%').join(', ') : ', all on track') + (criticalStudents.length ? ', critical: ' + criticalStudents.join(', ') : '')
     }).join(' | ')
-    const prompt = `
-You are generating an executive summary for district administrators.
-
-Return EXACTLY 4 bullet points.
-
-STRICT RULES:
-- One COMPLETE sentence per bullet.
-- Maximum 16 words per bullet.
-- Never repeat students, teachers, classes, or percentages.
-- Never combine unrelated thoughts into one sentence.
-- Do not duplicate information across bullets.
-- Use proper grammar and punctuation.
-- Do not cut sentences off.
-- Do not repeat phrases like "meet benchmark expectations."
-- Do not repeat department names.
-- Each bullet must communicate ONE clear idea only.
-
-PRIORITY ORDER:
-1. Most at-risk students
-2. Teachers/classes needing intervention
-3. Overall benchmark progress
-4. Highest-performing teacher/department
-
-OUTPUT STRUCTURE:
-- Bullet 1 → Critical students
-- Bullet 2 → Priority teacher/class
-- Bullet 3 → Overall district benchmark summary
-- Bullet 4 → Top-performing teacher/department
-
-GOOD EXAMPLES:
-- "Tyler Nguyen and Layla Hassan require immediate academic intervention."
-- "Mr. Kim's English 10 class requires curriculum support and administrative review."
-- "8 of 11 classes currently meet district benchmark expectations."
-- "Dr. Patel's science department leads the district with full benchmark compliance."
-
-BAD EXAMPLES:
-- Repeating names twice
-- Combining multiple ideas into one sentence
-- Duplicate percentages
-- Broken grammar
-- Run-on sentences
-
-DATA:
-${summaries}
-
-OVERALL METRICS:
-- District Average: ${overallAvg}%
-- Benchmark Classes: ${classesAtBenchmark}/${allClasses.length}
-
-Return ONLY bullet points.
-`;
+    const prompt = 'You are a school principal AI giving an executive summary. Use bullet points. Name specific teachers, classes, and students.\n\nData: ' + summaries + '\nOverall avg: ' + overallAvg + '%, ' + classesAtBenchmark + '/' + allClasses.length + ' classes at benchmark.\n\nGive 4-5 bullets. No intro. Just bullets. One sentence each.'
     streamClaude(prompt, c => setAiText(p => p + c), () => setAiLoading(false))
   }, [])
 
@@ -238,6 +241,14 @@ Return ONLY bullet points.
     }))
   ).sort((a,b) => a.avg - b.avg).slice(0, 6)
 
+  // Stat cards — TEACHERS and STUDENTS are clickable
+  const statCards = [
+    { val: teachers.length,      label: 'TEACHERS',        p: pastel(0), nav: 'teachers', clickable: true },
+    { val: totalStudents,         label: 'STUDENTS',        p: pastel(1), nav: 'students', clickable: true },
+    { val: `${overallAvg}%`,      label: 'SCHOOL AVG',      p: pastel(2), nav: null,       clickable: false },
+    { val: `${classesAtBenchmark}/${allClasses.length}`, label: 'AT BENCHMARK', p: pastel(3), nav: null, clickable: false },
+  ]
+
   return (
     <>
       <div style={{ marginBottom: 28 }}>
@@ -245,17 +256,27 @@ Return ONLY bullet points.
         <h1 style={{ fontSize: 36, fontWeight: 800, color: '#1a1a2e', letterSpacing: '-1px', fontFamily: F }}>Dashboard</h1>
       </div>
 
-      {/* Stat cards */}
+      {/* Stat cards — Teachers + Students are clickable links */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14, marginBottom: 28 }}>
-        {[
-          { val: teachers.length,      label: 'TEACHERS',        p: pastel(0) },
-          { val: totalStudents,         label: 'STUDENTS',        p: pastel(1) },
-          { val: `${overallAvg}%`,      label: 'SCHOOL AVG',      p: pastel(2) },
-          { val: `${classesAtBenchmark}/${allClasses.length}`, label: 'AT BENCHMARK', p: pastel(3) },
-        ].map((s, i) => (
-          <div key={i} style={{ background: s.p.bg, borderRadius: 24, padding: '20px 22px', position: 'relative', overflow: 'hidden' }}>
+        {statCards.map((s, i) => (
+          <div
+            key={i}
+            onClick={s.clickable ? () => onNavigate(s.nav) : undefined}
+            style={{
+              background: s.p.bg, borderRadius: 24, padding: '20px 22px',
+              position: 'relative', overflow: 'hidden',
+              cursor: s.clickable ? 'pointer' : 'default',
+              transition: s.clickable ? 'transform .15s, box-shadow .15s' : 'none',
+              boxShadow: '0 2px 8px rgba(26,26,46,0.06)',
+            }}
+            onMouseEnter={e => { if (s.clickable) { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 10px 28px rgba(26,26,46,0.13)' }}}
+            onMouseLeave={e => { if (s.clickable) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(26,26,46,0.06)' }}}
+          >
             <div style={{ fontSize: 38, fontWeight: 800, color: s.p.dark, fontFamily: F, lineHeight: 1 }}>{s.val}</div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: s.p.dark, opacity: .7, marginTop: 6, letterSpacing: '1.5px' }}>{s.label}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: s.p.dark, opacity: .7, marginTop: 6, letterSpacing: '1.5px', display: 'flex', alignItems: 'center', gap: 4 }}>
+              {s.label}
+              {s.clickable && <span style={{ fontSize: 11, opacity: .6 }}>→</span>}
+            </div>
             <div style={{ position: 'absolute', right: -16, bottom: -16, width: 80, height: 80, borderRadius: '50%', background: s.p.dark, opacity: .06 }} />
           </div>
         ))}
@@ -279,9 +300,7 @@ Return ONLY bullet points.
             const ok = tavg >= 75
             return (
               <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #f0ece6' }}>
-                <div style={{ width: 36, height: 36, borderRadius: 12, background: p.bg, color: p.dark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0, fontFamily: F }}>
-                  {t.avatar}
-                </div>
+                <PersonIconSquare size={36} borderRadius={12} bg={p.bg} color={p.dark} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', fontFamily: F }}>{t.name.split(' ').slice(1).join(' ')}</div>
                   <div style={{ fontSize: 11, color: '#8888aa', fontWeight: 600, letterSpacing: '.5px' }}>{t.subject.toUpperCase()}</div>
@@ -303,9 +322,7 @@ Return ONLY bullet points.
           {atRisk.length === 0 && <p style={{ fontSize: 14, color: '#8888aa', fontFamily: F }}>All students at benchmark!</p>}
           {atRisk.map((s, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderBottom: '1px solid #f0ece6' }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f5b8c4', color: '#7a1522', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 11, flexShrink: 0 }}>
-                {s.name.split(' ').map(w=>w[0]).join('')}
-              </div>
+              <PersonIcon size={32} bg="#fee2e2" color="#991b1b" />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e', fontFamily: F }}>{s.name}</div>
                 <div style={{ fontSize: 11, color: '#8888aa' }}>{s.class} · {s.teacher}</div>
@@ -364,8 +381,6 @@ function CurveChart({ classes }) {
     const y = H - PAD - ((v / max) * (H - PAD * 2))
     return [x, y]
   })
-
-  // Build smooth SVG path
   function smooth(points) {
     if (points.length < 2) return ''
     let d = `M ${points[0][0]} ${points[0][1]}`
@@ -376,10 +391,8 @@ function CurveChart({ classes }) {
     }
     return d
   }
-
   const linePath = smooth(pts)
   const areaPath = linePath + ` L ${pts[pts.length-1][0]} ${H} L ${pts[0][0]} ${H} Z`
-
   return (
     <div style={{ overflowX: 'auto' }}>
       <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
@@ -399,7 +412,6 @@ function CurveChart({ classes }) {
             <text x={x} y={H - 4} textAnchor="middle" fontSize="10" fill="#8888aa" fontFamily={F}>{classes[i]?.name?.slice(0,6)}</text>
           </g>
         ))}
-        {/* Benchmark line at 75% */}
         <line x1={PAD} y1={H - PAD - (0.75 * (H - PAD*2))} x2={W - PAD} y2={H - PAD - (0.75 * (H - PAD*2))} stroke="#f5b8c4" strokeWidth="1.5" strokeDasharray="4,4" />
       </svg>
     </div>
@@ -419,7 +431,7 @@ function TeachersPage({ teachers }) {
           return (
             <div key={t.id} style={{ background: '#fff', borderRadius: 24, overflow: 'hidden', boxShadow: '0 2px 16px rgba(26,26,46,0.05)' }}>
               <div style={{ background: p.bg, padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 52, height: 52, borderRadius: 18, background: p.dark, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16, fontFamily: F }}>{t.avatar}</div>
+                <PersonIconSquare size={52} borderRadius={18} bg={p.dark + '33'} color={p.dark} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 800, fontSize: 17, color: p.dark, fontFamily: F }}>{t.name}</div>
                   <div style={{ fontSize: 11, color: p.dark, opacity: .7, fontWeight: 700, letterSpacing: '1px' }}>{t.subject.toUpperCase()}</div>
@@ -481,23 +493,44 @@ function StudentsPage({ teachers, allClasses }) {
       <div style={{ background: '#fff', borderRadius: 24, padding: '22px 24px', marginBottom: 16, boxShadow: '0 2px 16px rgba(26,26,46,0.05)' }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '2px', color: '#8888aa', marginBottom: 14 }}>NEEDS ATTENTION</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px,1fr))', gap: 10 }}>
-          {atRisk.map((s, i) => (
-            <div key={i} style={{ background: '#fff5f6', border: '1.5px solid #f5b8c4', borderRadius: 18, padding: '12px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f5b8c4', color: '#7a1522', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 11, fontFamily: F }}>
-                  {s.name.split(' ').map(w=>w[0]).join('')}
+          {atRisk.map((s, i) => {
+            const sp = pastel(i)
+            return (
+              <div key={i} style={{ background: '#fff5f6', border: '1.5px solid #f5b8c4', borderRadius: 18, padding: '12px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <PersonIcon size={32} bg="#fee2e2" color="#991b1b" />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: '#1a1a2e', fontFamily: F }}>{s.name}</div>
+                    <div style={{ fontSize: 11, color: '#8888aa' }}>{s.className} {s.grade ? `· GR. ${s.grade}` : ''}</div>
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: '#7a1522', fontFamily: F }}>{s.avg}%</div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: '#1a1a2e', fontFamily: F }}>{s.name}</div>
-                  <div style={{ fontSize: 11, color: '#8888aa' }}>{s.className}</div>
+                <div style={{ height: 5, background: '#f5d8dc', borderRadius: 3 }}>
+                  <div style={{ height: '100%', width: `${s.avg}%`, background: '#f5b8c4', borderRadius: 3 }} />
                 </div>
-                <div style={{ fontWeight: 800, fontSize: 16, color: '#7a1522', fontFamily: F }}>{s.avg}%</div>
               </div>
-              <div style={{ height: 5, background: '#f5d8dc', borderRadius: 3 }}>
-                <div style={{ height: '100%', width: `${s.avg}%`, background: '#f5b8c4', borderRadius: 3 }} />
+            )
+          })}
+        </div>
+      </div>
+
+      {/* All passing students */}
+      <div style={{ background: '#fff', borderRadius: 24, padding: '22px 24px', boxShadow: '0 2px 16px rgba(26,26,46,0.05)' }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '2px', color: '#8888aa', marginBottom: 14 }}>ALL PASSING STUDENTS</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: 8 }}>
+          {passing.map((s, i) => {
+            const sp = pastel(i % 7)
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 14, background: '#f7f4f0' }}>
+                <PersonIconSquare size={34} borderRadius={10} bg={sp.bg} color={sp.dark} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: '#1a1a2e', fontFamily: F, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
+                  <div style={{ fontSize: 10, color: '#8888aa' }}>{s.className}{s.grade ? ` · GR. ${s.grade}` : ''}</div>
+                </div>
+                <div style={{ fontWeight: 800, fontSize: 14, color: '#166534', fontFamily: F }}>{s.avg}%</div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </>
