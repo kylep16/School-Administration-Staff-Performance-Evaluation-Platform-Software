@@ -72,12 +72,25 @@ Teacher: ${t.name} (${t.subject})
 Classes: ${details}
 
 Give 3-5 bullet points mixing observations and actions, like:
-- "Re-teach [topic] in [class] — class average is X%, below the Y% benchmark"
-- "Call on [student] more in [class] — they may need more engagement to stay on track"
+- "Re-teach [topic] in [class]. Class average is X%, below the Y% benchmark"
+INSERT NEW LINE. ADD SPACE HERE
+- "Call on [student] more in [class]. They may need more engagement to stay on track"
+INSERT NEW LINE
 - "Consider re-testing [class] on [topic] after a targeted review"
+INSERT NEW LINE
 - "[Student] in [class] is close to benchmark — a short 1-on-1 could push them over"
-- "[Class] is performing well — keep the current pace"
+INSERT NEW LINE
+- "[Class] is performing well. Keep the current pace"
+No intro. Just bullets. One sentence each.
+
+Example :
+- * "Re-teach Triangles in Math. Class average is 98%, below the 99% benchmark"
+- * "Call on Jason Nguyen more in Math. They may need more engagement to stay on track"
+- * "Consider re-testing Triangles on Math after a targeted review"
+- * "Kyle in Biology is close to benchmark — a short 1-on-1 could push them over"
+- * "Biology is performing well. Keep the current pace"
 No intro. Just bullets. One sentence each.`
+
     streamClaude(prompt, c => setAiText(p => p + c), () => setAiLoading(false))
   }, [tab, t.id])
 
