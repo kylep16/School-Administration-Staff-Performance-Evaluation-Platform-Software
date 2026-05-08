@@ -35,7 +35,7 @@ export default function App() {
       )}
 
       {role === 'teacher' && currentStudent && currentClass && (
-        <StudentDetail student={currentStudent} cls={currentClass} teacherName={currentTeacher?.name} onBack={handleBackFromStudent} onSignOut={handleSignOut} />
+        <StudentDetail student={currentStudent} cls={currentClass} teacherName={currentTeacher?.name} onBack={handleBackFromStudent} onSignOut={handleSignOut} role="teacher" allTeachers={[]} />
       )}
 
       {role === 'teacher' && !currentStudent && currentClass && (

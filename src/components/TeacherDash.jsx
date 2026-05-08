@@ -154,7 +154,7 @@ export default function TeacherDash({ teachers, currentTeacher, onSwitchTeacher,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           <div style={{ fontWeight: 800, fontSize: 18, color: '#1a1a2e', letterSpacing: '-0.5px', fontFamily: F, paddingRight: 24, borderRight: '1px solid #ede8e0', height: '100%', display: 'flex', alignItems: 'center' }}>
-            EduPulse
+            EduIQ
           </div>
           <div style={{ display: 'flex', alignItems: 'stretch', height: '100%', paddingLeft: 8 }}>
             {teachers.map((t2, i) => {

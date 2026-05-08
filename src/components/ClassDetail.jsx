@@ -231,7 +231,7 @@ export default function ClassDetail({ cls, teacherName, onBack, onOpenStudent, o
     <div style={{ minHeight: '100vh', background: '#f7f4f0', fontFamily: F }}>
       {/* Nav */}
       <nav style={{ background: '#fff', borderBottom: '1px solid #ede8e0', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ fontFamily: F, fontWeight: 800, fontSize: 20, color: '#1a1a2e' }}>EduPulse</div>
+        <div style={{ fontFamily: F, fontWeight: 800, fontSize: 20, color: '#1a1a2e' }}>EduIQ</div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <AIToggleBtn />
           <span style={{ background: '#a8c8f8', color: '#1a3a8a', padding: '5px 14px', borderRadius: 20, fontSize: 13, fontWeight: 700, fontFamily: F }}>{teacherName}</span>
