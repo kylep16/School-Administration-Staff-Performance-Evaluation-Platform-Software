@@ -3,6 +3,7 @@ import { classAvg, getAvg } from '../utils.js'
 import { Modal, FormGroup, TextInput, Btn, Notification } from './UI.jsx'
 import { useAI, AIToggleBtn } from '../AIContext.jsx'
 import StudentDetail from './StudentDetail.jsx'
+import { addStudent as dbAddStudent, saveReview as dbSaveReview, saveObservation as dbSaveObservation } from '../supabase.js'
 
 const F = "'Bricolage Grotesque', sans-serif"
 const PASTELS = [
@@ -104,11 +105,22 @@ export default function AdminDash({ teachers, onSignOut }) {
     setTeacherForm({ name: '', subject: '', email: '' }); setModal(null); setNotif(`${teacherForm.name} added!`); forceUpdate(n => n + 1)
   }
   const selTeacher = teachers.find(t => t.id === parseInt(studentForm.teacherId))
-  function saveStudent() {
+  async function saveStudent() {
     const cls = selTeacher?.classes.find(c => c.id === parseInt(studentForm.classId))
     if (!studentForm.name || !cls) { setNotif('Fill all fields'); return }
-    cls.students.push({ id: Date.now(), name: studentForm.name, grade: parseInt(studentForm.grade) || 9, scores: [parseInt(studentForm.score) || 70], topics: ['Topic 1'] })
-    setStudentForm({ teacherId: '', classId: '', name: '', grade: '9', score: '' }); setModal(null); setNotif(`${studentForm.name} added!`); forceUpdate(n => n + 1)
+    // Add to local state immediately
+    const localId = Date.now()
+    cls.students.push({ id: localId, name: studentForm.name, grade: parseInt(studentForm.grade) || 9, scores: [parseInt(studentForm.score) || 70], topics: ['Topic 1'] })
+    setStudentForm({ teacherId: '', classId: '', name: '', grade: '9', score: '' }); setModal(null)
+    forceUpdate(n => n + 1)
+    // Persist to Supabase
+    try {
+      await dbAddStudent({ name: studentForm.name, grade: parseInt(studentForm.grade) || 9, classId: parseInt(studentForm.classId) })
+      setNotif(`${studentForm.name} added and saved to database!`)
+    } catch (err) {
+      console.error('Supabase error:', err)
+      setNotif(`${studentForm.name} added locally (database sync failed)`)
+    }
   }
 
   const navItems = [
@@ -429,11 +441,19 @@ function PerformanceReviewsPage({ teachers, reviews, setReviews, setNotif }) {
   function updateCategory(id, cat, val) {
     setReviews(prev => prev.map(r => r.id === id ? { ...r, categories: { ...r.categories, [cat]: val } } : r))
   }
-  function completeReview(id) {
+  async function completeReview(id) {
     const r = reviews.find(r => r.id === id)
     const avg = Math.round(Object.values(r.categories).reduce((a,b)=>a+b,0) / Object.values(r.categories).length)
-    setReviews(prev => prev.map(rv => rv.id === id ? { ...rv, status: 'completed', overall: avg } : rv))
-    setNotif('Review completed and saved!')
+    const updated = { ...r, status: 'completed', overall: avg }
+    setReviews(prev => prev.map(rv => rv.id === id ? updated : rv))
+    try {
+      const saved = await dbSaveReview(updated)
+      setReviews(prev => prev.map(rv => rv.id === id ? { ...rv, dbId: saved.id } : rv))
+      setNotif('Review completed and saved to database!')
+    } catch (err) {
+      console.error('Supabase error:', err)
+      setNotif('Review completed (database sync failed)')
+    }
   }
   function startNewReview() {
     if (!newReviewTeacherId) { setNotif('Select a teacher'); return }
@@ -677,9 +697,18 @@ function ObservationsPage({ teachers, allClasses, observations, setObservations,
   function updateMetric(id, key, val) {
     setObservations(prev => prev.map(o => o.id === id ? { ...o, [key]: val } : o))
   }
-  function completeObservation(id) {
-    setObservations(prev => prev.map(o => o.id === id ? { ...o, status: 'completed' } : o))
-    setNotif('Observation saved!')
+  async function completeObservation(id) {
+    const obs = observations.find(o => o.id === id)
+    const updated = { ...obs, status: 'completed' }
+    setObservations(prev => prev.map(o => o.id === id ? updated : o))
+    try {
+      const saved = await dbSaveObservation(updated)
+      setObservations(prev => prev.map(o => o.id === id ? { ...o, dbId: saved.id } : o))
+      setNotif('Observation saved to database!')
+    } catch (err) {
+      console.error('Supabase error:', err)
+      setNotif('Observation saved locally (database sync failed)')
+    }
   }
   function startNewObs() {
     if (!newObs.teacherId || !newObs.classId || !newObs.date) { setNotif('Fill in all fields'); return }
