@@ -16,7 +16,7 @@ A school administration and staff performance evaluation platform built for K-12
 
 ### Teacher Portal
 - Class overview with stamp cards colored green or red based on benchmark performance
-- Large class accommodation: classes with 30+ students show `!` / `!!` / `!!!+` instead of individual dots
+- Large class accommodation: classes with 30+ students show `!` / `!!` / `!!!+` depending on how many students are below the benchmark
 - Per-class student roster with aligned progress bars and benchmark tick marks
 - All-students dashboard overlay grouped by grade level
 - Add Score workflow with multi-step modal: select class, select students, enter scores with live pass/fail feedback
