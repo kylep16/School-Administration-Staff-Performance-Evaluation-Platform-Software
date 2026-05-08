@@ -119,4 +119,4 @@ Teacher (3)
 
 ---
 
-Built by Kyle Phan for the Dynamic Active internship evaluation.
+Built by Kyle Potente for the Dynamic Active internship evaluation.
